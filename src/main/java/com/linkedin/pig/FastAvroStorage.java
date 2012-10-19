@@ -41,11 +41,16 @@ import org.apache.pig.impl.util.UDFContext;
 import com.google.common.collect.Maps;
 
 /**
- * @author jadler
+ * @author Joseph adler
+ * Pig Storage function for reading and writing Avro data.
  * 
  */
 public class FastAvroStorage extends LoadFunc implements StoreFuncInterface, LoadMetadata {
 
+  /**
+   *  Creates new instance of Pig Storage function, without specifying the output schema. Useful
+   *  for just loading in data.
+   */  
   public FastAvroStorage() {
   }
 
@@ -53,6 +58,14 @@ public class FastAvroStorage extends LoadFunc implements StoreFuncInterface, Loa
   private String schemaNameSpace = null;
   protected Schema schema;
 
+  /**
+   *  Creates new instance of Pig Storage function, specifying output schema properties.
+   *  @param vars Input value array. First item in the array may be an avro schema or 
+   *  may just be the name of the output record type. Second item in the array may be a 
+   *  namespace for the output schema. Arguments after the second are currently silently
+   *  ignored.
+   *  
+   */  
   public FastAvroStorage(String[] vars) {
     if (vars != null && vars.length > 0) {
       try {

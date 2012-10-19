@@ -35,6 +35,12 @@ import com.google.common.collect.Sets;
  */
 public class FastAvroStorageCommon {
 
+  /**
+   * Determines the pig object type of the Avro schema
+   * @param s The avro schema for which to determine the type
+   * @return the byte representing the schema type
+   * @see org.apache.avro.Schema.Type
+   */  
   public static byte getPigType(Schema s) throws ExecException {
     switch(s.getType()) {
     case ARRAY:
@@ -76,13 +82,23 @@ public class FastAvroStorageCommon {
       throw new ExecException("Unknown type");
     }
   }
- 
+
+  /**
+   * Translates an Avro schema to a Resource Schema (for Pig)
+   * @param s The avro schema for which to determine the type
+   * @return the corresponding pig schema
+   */  
   public static ResourceSchema avroSchemaToResourceSchema(Schema s) throws IOException {
     return avroSchemaToResourceSchema(s, 
         Sets.<String>newHashSet(), 
         Maps.<String,ResourceSchema>newHashMap());
   }  
-  
+
+  /**
+   * Translates a single Avro schema field to a Resource Schema field (for Pig)
+   * @param s The avro schema field for which to determine the type
+   * @return the corresponding pig resource schema field
+   */  
   private static ResourceSchema.ResourceFieldSchema fieldToResourceFieldSchema(Field f, 
       Set<String> namesInStack, Map<String,ResourceSchema> alreadyDefinedSchemas) 
     throws IOException {
@@ -150,6 +166,11 @@ public class FastAvroStorageCommon {
     return rf;
   }
   
+  /**
+   * Translates an Avro schema to a Resource Schema (for Pig). Internal method.
+   * @param s The avro schema for which to determine the type
+   * @return the corresponding pig schema
+   */  
   private static ResourceSchema avroSchemaToResourceSchema(Schema s, 
         Set<String> namesInStack, Map<String,ResourceSchema> alreadyDefinedSchemas)
       throws IOException {
@@ -303,6 +324,12 @@ public class FastAvroStorageCommon {
     return s;
   }
   
+  /**
+   * Packs a Pig Tuple into an Avro record
+   * @param t the Pig tuple to pack into the avro object
+   * @param s The avro schema for which to determine the type
+   * @return the avro record corresponding to the input tuple
+   */  
   public static GenericData.Record packIntoAvro(Tuple t, Schema s) throws IOException {
     
     try {
@@ -342,6 +369,12 @@ public class FastAvroStorageCommon {
     }      
   }
 
+  /**
+   * Packs a Pig DataBag into an Avro array
+   * @param db the Pig databad to pack into the avro array
+   * @param s The avro schema for which to determine the type
+   * @return the avro array corresponding to the input bag
+   */  
   public static GenericData.Array<GenericData.Record> packIntoAvro(DataBag db, Schema s) throws IOException {
 
     try {
@@ -356,7 +389,15 @@ public class FastAvroStorageCommon {
       throw new IOException(e);
     }      
   }
-  
+
+  /**
+   * Takes an Avro Schema and a Pig RequiredFieldList and returns a new schema with
+   * only the requried fields, or no if the function can't extract only those fields. Useful
+   * for push down projections
+   * @param rfl the Pig required field list
+   * @param oldschema The avro schema for which to determine the type
+   * @return the new schema, or null
+   */  
   public static Schema newSchemaFromRequiredFieldList(Schema oldSchema, RequiredFieldList rfl) {
     return newSchemaFromRequiredFieldList(oldSchema, rfl.getFields());
   }

@@ -260,7 +260,6 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
           @Override
           public void write(NullWritable n, Object o) throws IOException, InterruptedException {
             GenericData.Record r = FastAvroStorageCommon.packIntoAvro((Tuple)o,schema);
-            System.err.printf("Packed %s into schema %s: %s\n", o.toString(), schema.toString(), r.toString());
             writer.write(r);
             if (writer.sizeEstimate() >= blockSize)
               flush();

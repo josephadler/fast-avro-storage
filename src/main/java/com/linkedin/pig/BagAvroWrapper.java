@@ -15,6 +15,10 @@ import org.apache.pig.data.TupleFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
+/**
+ * Class that implements the Pig bag interface, wrapping an Avro array. Designed to reduce
+ * data copying.
+ */  
 public class BagAvroWrapper<T> implements DataBag {
 
   GenericArray<T> theArray;
