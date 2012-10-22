@@ -2,7 +2,7 @@ package com.linkedin.pig;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collection;
+import java.util.Formatter;
 import java.util.List;
 
 import org.apache.avro.Schema;
@@ -21,6 +21,8 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.pig.LoadPushDown;
 import org.apache.pig.ResourceSchema;
@@ -33,7 +35,6 @@ import org.apache.trevni.avro.AvroColumnWriter;
 import org.apache.trevni.avro.AvroTrevniOutputFormat;
 import org.apache.trevni.avro.HadoopInput;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 /**
@@ -51,6 +52,13 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
    * @see org.apache.pig.LoadPushDown#getFeatures()
    */
 
+  public TrevniStorage() {    
+  }
+  
+  public TrevniStorage(String[] vars) {
+    super(vars);
+  }
+  
   public static final PathFilter visibleTrevniFiles = new PathFilter() {
     @Override
     public boolean accept(Path p) {
@@ -220,7 +228,7 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
       }
 
       @Override
-      public RecordWriter<NullWritable, Object> getRecordWriter(TaskAttemptContext tc) throws IOException,
+      public RecordWriter<NullWritable, Object> getRecordWriter(final TaskAttemptContext tc) throws IOException,
       InterruptedException {
 
         if (schema == null) {
@@ -243,7 +251,9 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
               new AvroColumnWriter<GenericData.Record>(schema, meta);
 
           private void flush() throws IOException {
-            OutputStream out = fs.create(new Path(dir, "part-"+(part++)+AvroTrevniOutputFormat.EXT));
+            Integer taskAttemptId = tc.getTaskAttemptID().getTaskID().getId();
+            String partName = String.format("%5d_%3d", taskAttemptId, part++);
+            OutputStream out = fs.create(new Path(dir, "part-"+partName+AvroTrevniOutputFormat.EXT));
             try {
               writer.writeTo(out);
             } finally {
