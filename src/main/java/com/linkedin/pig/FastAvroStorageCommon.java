@@ -340,7 +340,7 @@ public class FastAvroStorageCommon {
         if (isNullableUnion(innerSchema)) {
           if (o == null) {
             record.put(f.pos(), null);
-            break;
+            continue;
           }
           innerSchema = removeNullableUnion(innerSchema);
         }
