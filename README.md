@@ -4,8 +4,8 @@ Fast Avro Storage
 I got frustrated with the version of AvroStorage bundled with Apache Pig (in
 Piggybank), so I decided to write my own.
 
-Why god why?
-------------
+Why did you bother?
+-------------------
 The AvroStorage code is very complicated. It does a lot of unnecesary copying.
 It doesn't support the latest version of Avro (so it doesn't support
 Snappy compression). All of these things are bad.

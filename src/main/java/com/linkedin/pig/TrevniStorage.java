@@ -244,6 +244,8 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
         
         if (!fs.mkdirs(dir))
           throw new IOException("Failed to create directory: " + dir);
+
+        meta.setCodec("snappy");
         
         return new RecordWriter<NullWritable, Object>() {
           private int part = 0;
@@ -252,7 +254,7 @@ public class TrevniStorage extends FastAvroStorage implements LoadPushDown{
 
           private void flush() throws IOException {
             Integer taskAttemptId = tc.getTaskAttemptID().getTaskID().getId();
-            String partName = String.format("%5d_%3d", taskAttemptId, part++);
+            String partName = String.format("%05d_%03d", taskAttemptId, part++);
             OutputStream out = fs.create(new Path(dir, "part-"+partName+AvroTrevniOutputFormat.EXT));
             try {
               writer.writeTo(out);

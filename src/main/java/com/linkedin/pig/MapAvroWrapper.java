@@ -5,15 +5,12 @@ package com.linkedin.pig;
 
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.avro.util.Utf8;
 
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Sets;
 import com.google.common.base.Function;
 

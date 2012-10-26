@@ -355,6 +355,8 @@ public class FastAvroStorage extends LoadFunc implements StoreFuncInterface, Loa
       schema = getInputAvroSchema();
       if (schema == null) {
         schema = getAvroSchema(location, job);
+        if (schema == null)
+          throw new IOException("Could not determine avro schema for location " + location);
         setInputAvroSchema(schema);
       }
     }
@@ -366,6 +368,8 @@ public class FastAvroStorage extends LoadFunc implements StoreFuncInterface, Loa
 
   public Schema getInputAvroSchema() {
     String schemaString = getProperties().getProperty(INPUT_AVRO_SCHEMA);
+    if (schemaString == null)
+      return null;
     schema = new Schema.Parser().parse(schemaString);
     return schema;
   }
@@ -378,26 +382,18 @@ public class FastAvroStorage extends LoadFunc implements StoreFuncInterface, Loa
   @Override
   public InputFormat<NullWritable, GenericData.Record> getInputFormat() throws IOException {
 
-    class FastAvroStorageInputFormat extends PigFileInputFormat<NullWritable, GenericData.Record> {
-
-      Schema schema;
-
-      FastAvroStorageInputFormat(Schema s) {
-        schema = s;
-      }
+    return new PigFileInputFormat<NullWritable, GenericData.Record> () {
 
       @Override
       public RecordReader<NullWritable, GenericData.Record> createRecordReader(InputSplit is, TaskAttemptContext tc)
           throws IOException, InterruptedException {
-        RecordReader<NullWritable, GenericData.Record> rr = new FastAvroRecordReader(schema);
+        RecordReader<NullWritable, GenericData.Record> rr = new FastAvroRecordReader(getInputAvroSchema());
         rr.initialize(is, tc);
         tc.setStatus(is.toString());
         return rr;
       }
+    };
 
-    }
-
-    return new FastAvroStorageInputFormat(getInputAvroSchema());
   }
 
   /*
