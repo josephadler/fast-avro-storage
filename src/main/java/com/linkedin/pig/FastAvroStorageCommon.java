@@ -117,15 +117,29 @@ public class FastAvroStorageCommon {
     switch (pigType) {
       case DataType.BAG:
         {
-          ResourceSchema innerResourceSchema = avroSchemaToResourceSchema(
-              fieldSchema.getElementType(),namesInStack, alreadyDefinedSchemas);
           ResourceSchema bagSchema = new ResourceSchema();
           ResourceSchema.ResourceFieldSchema[] bagSchemaFields = new ResourceSchema.ResourceFieldSchema[1];
           bagSchemaFields[0] = new ResourceSchema.ResourceFieldSchema();
           bagSchemaFields[0].setType(DataType.TUPLE);
-          bagSchemaFields[0].setName(fieldSchema.getElementType().getName());
-          bagSchemaFields[0].setSchema(innerResourceSchema);
           bagSchemaFields[0].setDescription(fieldSchema.getDoc());
+          ResourceSchema innerResourceSchema = null;
+          switch (fieldSchema.getElementType().getType()) {
+            case RECORD:
+            case MAP:
+            case ARRAY:
+              innerResourceSchema = avroSchemaToResourceSchema(
+                  fieldSchema.getElementType(),namesInStack, alreadyDefinedSchemas);
+              bagSchemaFields[0].setName(fieldSchema.getElementType().getName());
+              break;
+            default:         
+              innerResourceSchema = new ResourceSchema();
+              ResourceSchema.ResourceFieldSchema[] tupleSchemaFields = new ResourceSchema.ResourceFieldSchema[1];
+              tupleSchemaFields[0] = new ResourceSchema.ResourceFieldSchema();
+              tupleSchemaFields[0].setType(getPigType(fieldSchema.getElementType()));
+              innerResourceSchema.setFields(tupleSchemaFields);
+          }
+
+          bagSchemaFields[0].setSchema(innerResourceSchema);
           bagSchema.setFields(bagSchemaFields);
           rf.setSchema(bagSchema);
         }
@@ -146,7 +160,6 @@ public class FastAvroStorageCommon {
           } else {
             mapSchemaFields[0] = new ResourceSchema.ResourceFieldSchema();
             mapSchemaFields[0].setType(getPigType(mapAvroSchema));
-            // mapSchemaFields[0].setName(fieldSchema.getValueType().getName());
           }
           mapSchema.setFields(mapSchemaFields);
           rf.setSchema(mapSchema);
